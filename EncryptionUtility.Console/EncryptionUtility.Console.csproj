@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EncryptionUtility\EncryptionUtility.csproj" />
+    <ProjectReference Include="..\EncryptionUtility.Crypto\EncryptionUtility.Crypto.csproj" />
   </ItemGroup>
 
 </Project>

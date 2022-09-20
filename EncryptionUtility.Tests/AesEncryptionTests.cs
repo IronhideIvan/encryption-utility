@@ -1,3 +1,5 @@
+using EncryptionUtility.Crypto;
+
 namespace EncryptionUtility.Tests;
 
 public class AesEncryptionTests

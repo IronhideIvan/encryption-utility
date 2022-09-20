@@ -2,7 +2,7 @@
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 
-namespace EncryptionUtility
+namespace EncryptionUtility.Crypto
 {
   public class AesEncryption
   {
