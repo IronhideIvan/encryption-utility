@@ -1,13 +1,10 @@
-﻿using System.IO;
-using System.Security.Cryptography;
-using System.Threading.Tasks;
+﻿using System.Security.Cryptography;
+using static EncryptionUtility.Crypto.IEncryption;
 
 namespace EncryptionUtility.Crypto
 {
-  public class AesEncryption
+  public sealed class AesEncryption : IEncryption
   {
-    public delegate Task CryptoProgressAsync(long bytesProcessed);
-
     public async Task EncryptFileAsync(string inputFilepath, string outputFilepath, byte[] password, CryptoProgressAsync? progress = null)
     {
       //create output file name
