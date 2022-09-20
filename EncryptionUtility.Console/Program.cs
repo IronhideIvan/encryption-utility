@@ -31,15 +31,41 @@ namespace EncryptionUtility
                 }
 
                 var encryptionUtil = new AesEncryption();
+
+                var consoleStatus = AnsiConsole.Status()
+                  .Spinner(Spinner.Known.Star);
+
+                var totalFileBytes = new FileInfo(filepath).Length;
+
                 switch (mode)
                 {
                     case "-e":
                         AnsiConsole.WriteLine("Beginning Encryption...");
-                        await encryptionUtil.EncryptAsync(filepath, password);
+                        await consoleStatus.StartAsync(GetProgressMessage(0, 0), async ctx =>
+                        {
+                            await encryptionUtil.EncryptFileAsync(
+                                filepath,
+                                filepath + ".aes",
+                                System.Text.Encoding.UTF8.GetBytes(password), (long progress) =>
+                            {
+                                ctx.Status(GetProgressMessage(progress, totalFileBytes));
+                                return Task.CompletedTask;
+                            });
+                        });
                         break;
                     case "-d":
                         AnsiConsole.WriteLine("Beginning Decryption...");
-                        await encryptionUtil.DecryptAsync(filepath, password);
+                        await consoleStatus.StartAsync(GetProgressMessage(0, 0), async ctx =>
+                        {
+                            await encryptionUtil.DecryptFileAsync(
+                                filepath,
+                                filepath + ".decrypted",
+                                System.Text.Encoding.UTF8.GetBytes(password), (long progress) =>
+                            {
+                                ctx.Status(GetProgressMessage(progress, totalFileBytes));
+                                return Task.CompletedTask;
+                            });
+                        });
                         break;
                     default:
                         AnsiConsole.WriteLine($"Unknown mode given. Options are '-e' to encrypt and '-d' to decrypt. Given: '{mode}'");
@@ -50,6 +76,26 @@ namespace EncryptionUtility
             {
                 AnsiConsole.WriteException(ex);
             }
+        }
+
+        private static string GetProgressMessage(long progress, long total)
+        {
+            return $"Progress: {GetPercentage(progress, total)} - {progress}/{total} bytes";
+        }
+
+        private static string GetPercentage(long numerator, long denominator)
+        {
+            if (denominator == 0)
+            {
+                return "ERROR";
+            }
+
+            var dNum = Convert.ToDouble(numerator);
+            var dDen = Convert.ToDouble(denominator);
+
+            var perc = Math.Round((dNum / dDen) * 100, 2);
+
+            return string.Format("{0:N2}%", perc);
         }
     }
 }
