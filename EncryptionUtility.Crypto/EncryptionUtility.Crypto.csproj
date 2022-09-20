@@ -12,6 +12,11 @@
     <Authors>Arthur Lisek-Koper</Authors>
     <Company>alkfreelance</Company>
     <RepositoryUrl>https://github.com/IronhideIvan/encryption-utility</RepositoryUrl>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="./../LICENSE.txt" Pack="true" PackagePath="LICENSE.txt" />
+  </ItemGroup>
 
 </Project>
