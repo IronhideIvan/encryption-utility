@@ -6,4 +6,11 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <PackageId>ALK.EncryptionUtility.Crypto</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>Arthur Lisek-Koper</Authors>
+    <Company>alkfreelance</Company>
+  </PropertyGroup>
+
 </Project>
