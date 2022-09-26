@@ -5,6 +5,18 @@ namespace EncryptionUtility.Crypto
 {
   public sealed class AesEncryption : IEncryption
   {
+    private AesEncryptionConfiguration _config;
+
+    public AesEncryption()
+    {
+      _config = new AesEncryptionConfiguration();
+    }
+
+    public AesEncryption(AesEncryptionConfiguration config)
+    {
+      _config = config;
+    }
+
     public async Task EncryptFileAsync(string inputFilepath, string outputFilepath, byte[] password, CryptoProgressAsync? progress = null)
     {
       //create output file name
@@ -68,7 +80,7 @@ namespace EncryptionUtility.Crypto
       using (CryptoStream cs = new CryptoStream(outputStream, AES.CreateEncryptor(), CryptoStreamMode.Write))
       {
         //create a buffer (1mb) so only this amount will allocate in the memory and not the whole file
-        byte[] buffer = new byte[1048576];
+        byte[] buffer = new byte[_config.BufferBytes];
         int read;
 
         long currentProgress = 0;
@@ -103,7 +115,7 @@ namespace EncryptionUtility.Crypto
       using (CryptoStream cs = new CryptoStream(inputStream, AES.CreateDecryptor(), CryptoStreamMode.Read))
       {
         int read;
-        byte[] buffer = new byte[1048576];
+        byte[] buffer = new byte[_config.BufferBytes];
         long currentProgress = 0;
 
         while ((read = cs.Read(buffer, 0, buffer.Length)) > 0)

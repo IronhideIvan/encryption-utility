@@ -31,7 +31,10 @@ namespace EncryptionUtility
           return;
         }
 
-        var encryptionUtil = new AesEncryption();
+        var encryptionUtil = new AesEncryption(new AesEncryptionConfiguration
+        {
+          BufferBytes = 1048576
+        });
 
         var consoleStatus = AnsiConsole.Status()
           .Spinner(Spinner.Known.Star);
@@ -49,9 +52,9 @@ namespace EncryptionUtility
                               filepath + ".aes",
                               System.Text.Encoding.UTF8.GetBytes(password), (long progress) =>
                           {
-                  ctx.Status(GetProgressMessage(progress, totalFileBytes));
-                  return Task.CompletedTask;
-                });
+                            ctx.Status(GetProgressMessage(progress, totalFileBytes));
+                            return Task.CompletedTask;
+                          });
             });
             break;
           case "-d":
@@ -63,9 +66,9 @@ namespace EncryptionUtility
                               filepath + ".decrypted",
                               System.Text.Encoding.UTF8.GetBytes(password), (long progress) =>
                           {
-                  ctx.Status(GetProgressMessage(progress, totalFileBytes));
-                  return Task.CompletedTask;
-                });
+                            ctx.Status(GetProgressMessage(progress, totalFileBytes));
+                            return Task.CompletedTask;
+                          });
             });
             break;
           default:

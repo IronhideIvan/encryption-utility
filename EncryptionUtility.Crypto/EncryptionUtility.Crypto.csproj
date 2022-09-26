@@ -8,7 +8,7 @@
 
   <PropertyGroup>
     <PackageId>ALK.EncryptionUtility.Crypto</PackageId>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <Authors>Arthur Lisek-Koper</Authors>
     <Company>alkfreelance</Company>
     <RepositoryUrl>https://github.com/IronhideIvan/encryption-utility</RepositoryUrl>
