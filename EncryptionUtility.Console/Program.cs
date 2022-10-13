@@ -1,105 +1,126 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using EncryptionUtility.Console;
 using EncryptionUtility.Crypto;
 using Spectre.Console;
 
-namespace EncryptionUtility
+namespace EncryptionUtility.Console
 {
   public class Program
   {
     public static async Task Main(string[] args)
     {
+      var config = new ArgumentConfig();
       try
       {
-        if (args == null || args.Length != 3)
+        if (args == null || args.Length == 0 || args.Any(a => a == "-h"))
         {
-          AnsiConsole.WriteLine("Invalid number of arguments. There should be three arguments with the following format:");
-          AnsiConsole.WriteLine("");
-          AnsiConsole.WriteLine("\t[-e|-d] <password> <filepath>");
-          AnsiConsole.WriteLine("");
+          WriteHelp();
           return;
         }
 
-        var mode = args[0];
-        var password = args[1];
-        var filepath = args[2];
-
-        if (!File.Exists(filepath))
+        for (int i = 0; i < args.Length; ++i)
         {
-          AnsiConsole.WriteLine($"Given filepath does not exist: '{filepath}'");
-          return;
+          var arg = args[i];
+          switch (arg)
+          {
+            case "-verbose":
+            case "-v":
+              config.Verbosity = Verbosity.Verbose;
+              break;
+            case "-file":
+            case "-f":
+              config.InputType = InputType.File;
+              break;
+            case "-string":
+            case "-s":
+              config.InputType = InputType.RawString;
+              break;
+            case "-i":
+            case "-input":
+              {
+                ++i;
+                if (i >= args.Length)
+                {
+                  throw new Exception("No input provided after '-input/-i' argument.");
+                }
+                config.Input = args[i];
+              }
+              break;
+            case "-password":
+            case "-p":
+              {
+                ++i;
+                if (i >= args.Length)
+                {
+                  throw new Exception("No input provided after '-input/-i' argument.");
+                }
+                config.Password = args[i];
+              }
+              break;
+            case "-encrypt":
+            case "-e":
+              config.ProcessingType = ProcessingType.Encrypt;
+              break;
+            case "-decrypt":
+            case "-d":
+              config.ProcessingType = ProcessingType.Decrypt;
+              break;
+            default:
+              throw new Exception($"Unknown argument at index {i}: {arg}");
+          }
         }
 
-        var encryptionUtil = new AesEncryption(new AesEncryptionConfiguration
+        if (config.ProcessingType == ProcessingType.Unknown)
         {
-          BufferBytes = 1048576
-        });
-
-        var consoleStatus = AnsiConsole.Status()
-          .Spinner(Spinner.Known.Star);
-
-        var totalFileBytes = new FileInfo(filepath).Length;
-
-        switch (mode)
-        {
-          case "-e":
-            AnsiConsole.WriteLine("Beginning Encryption...");
-            await consoleStatus.StartAsync(GetProgressMessage(0, 0), async ctx =>
-            {
-              await encryptionUtil.EncryptFileAsync(
-                              filepath,
-                              filepath + ".aes",
-                              System.Text.Encoding.UTF8.GetBytes(password), (long progress) =>
-                          {
-                            ctx.Status(GetProgressMessage(progress, totalFileBytes));
-                            return Task.CompletedTask;
-                          });
-            });
-            break;
-          case "-d":
-            AnsiConsole.WriteLine("Beginning Decryption...");
-            await consoleStatus.StartAsync(GetProgressMessage(0, 0), async ctx =>
-            {
-              await encryptionUtil.DecryptFileAsync(
-                              filepath,
-                              filepath + ".decrypted",
-                              System.Text.Encoding.UTF8.GetBytes(password), (long progress) =>
-                          {
-                            ctx.Status(GetProgressMessage(progress, totalFileBytes));
-                            return Task.CompletedTask;
-                          });
-            });
-            break;
-          default:
-            AnsiConsole.WriteLine($"Unknown mode given. Options are '-e' to encrypt and '-d' to decrypt. Given: '{mode}'");
-            return;
+          AnsiConsole.WriteLine("No processing type set");
+          WriteHelp();
+          throw new Exception("No processing type set.");
         }
+
+        if (string.IsNullOrEmpty(config.Input))
+        {
+          AnsiConsole.WriteLine("No input provided.");
+          WriteHelp();
+          throw new Exception("No input provided.");
+        }
+
+        if (string.IsNullOrEmpty(config.Password))
+        {
+          AnsiConsole.WriteLine("No password provided.");
+          WriteHelp();
+          throw new Exception("No password provided.");
+        }
+
+        var encryptionTool = new EncryptionTool();
+        await encryptionTool.ProcessAsync(config);
       }
       catch (Exception ex)
       {
-        AnsiConsole.WriteException(ex);
+        if (config.Verbosity != Verbosity.Silent)
+        {
+          AnsiConsole.WriteException(ex);
+        }
+        throw;
       }
     }
 
-    private static string GetProgressMessage(long progress, long total)
+    private static void WriteHelp()
     {
-      return $"Progress: {GetPercentage(progress, total)} - {progress}/{total} bytes";
-    }
-
-    private static string GetPercentage(long numerator, long denominator)
-    {
-      if (denominator == 0)
-      {
-        return "ERROR";
-      }
-
-      var dNum = Convert.ToDouble(numerator);
-      var dDen = Convert.ToDouble(denominator);
-
-      var perc = Math.Round((dNum / dDen) * 100, 2);
-
-      return string.Format("{0:N2}%", perc);
+      AnsiConsole.WriteLine("The following are commands and general information about the tool:");
+      AnsiConsole.WriteLine("Commands");
+      AnsiConsole.WriteLine("-v/-verbose\tVerbose Output");
+      AnsiConsole.WriteLine("-f/-file\tFile Input Type");
+      AnsiConsole.WriteLine("-s/-string\tString Input Type (DEFAULT)");
+      AnsiConsole.WriteLine("-i/-input\tInput Flag (ex. -i <input>)");
+      AnsiConsole.WriteLine("-p/-password\tpassword Flag (ex. -p <password>)");
+      AnsiConsole.WriteLine("-e/-encrpyt\tEncrypt Input Contents");
+      AnsiConsole.WriteLine("-d/-decrypt\tDecrypt Input Contents");
+      AnsiConsole.WriteLine("Examples:");
+      AnsiConsole.WriteLine("-v -f -e -i <filepath> -p <password>");
+      AnsiConsole.WriteLine("-e -i \"Encrypt ME!\" -p <password>");
+      AnsiConsole.WriteLine("");
     }
   }
 }
